@@ -1049,8 +1049,8 @@ saveLoadFile = forms.textbox(form, config.NeatConfig.Filename .. ".pool", 170, 2
 saveLoadLabel = forms.label(form, "Save/Load:", 5, 129)
 spritelist.InitSpriteList()
 spritelist.InitExtSpriteList()
+
 while true do
-	
 	if config.Running == true then
 
 	local species = pool.species[pool.currentSpecies]
@@ -1101,25 +1101,10 @@ while true do
 	local timeoutBonus = pool.currentFrame / 4
 
 	if game.getPlayerAnim() == 9 or timeout + timeoutBonus <= 0 then
-		local score = game.getScore() - startScore
-		
-		--console.writeline("Coins: " .. coins .. " score: " .. score)
-
-		local coinScoreFitness = (coins * 50) + (score * 0.2)
-		if (coins + score) > 0 then 
-			console.writeline("Coins and Score added " .. coinScoreFitness .. " fitness")
-		end
-		
 		local hitPenalty = marioHitCounter * 100
-		local powerUpBonus = powerUpCounter * 100
+		local powerUpBonus = powerUpCounter * 50
 	
-		local fitness = coinScoreFitness - hitPenalty + powerUpBonus + rightmost - pool.currentFrame / 2
-
-		if startLives < Lives then
-			local ExtraLiveBonus = (Lives - startLives)*1000
-			fitness = fitness + ExtraLiveBonus
-			console.writeline("ExtraLiveBonus added " .. ExtraLiveBonus)
-		end
+		local fitness = hitPenalty + powerUpBonus + rightmost * math.log(game.getTimer()) - pool.currentFrame / 2
 
 		if rightmost > 4816 then
 			fitness = fitness + 1000
@@ -1157,7 +1142,7 @@ while true do
 	end
 	
 	gui.drawEllipse(game.screenX-84, game.screenY-84, 192, 192, 0x50000000) 
-	forms.settext(FitnessLabel, "Fitness: " .. math.floor(rightmost - (pool.currentFrame) / 2 - (timeout + timeoutBonus)*2/3))
+	forms.settext(FitnessLabel, "Fitness: " .. math.floor(rightmost * math.log(game.getTimer()) - (pool.currentFrame) / 2 - (timeout + timeoutBonus)*2/3))
 	forms.settext(GenerationLabel, "Generation: " .. pool.generation)
 	forms.settext(SpeciesLabel, "Species: " .. pool.currentSpecies)
 	forms.settext(GenomeLabel, "Genome: " .. pool.currentGenome)
