@@ -27,6 +27,11 @@ function _M.getTimer()
 	return time
 end
 
+function _M.getPlayerAnim()
+	local anim = memory.readbyte(0x71)
+	return anim
+end
+
 function _M.getScore()
 	local scoreLeft = memory.read_s16_le(0x0F34)
 	local scoreRight = memory.read_s16_le(0x0F36)

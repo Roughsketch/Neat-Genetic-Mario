@@ -1099,9 +1099,8 @@ while true do
 	timeout = timeout - 1
 	
 	local timeoutBonus = pool.currentFrame / 4
-	if timeout + timeoutBonus <= 0 then
-	
-		local coins = game.getCoins() - startCoins
+
+	if game.getPlayerAnim() == 9 or timeout + timeoutBonus <= 0 then
 		local score = game.getScore() - startScore
 		
 		--console.writeline("Coins: " .. coins .. " score: " .. score)
