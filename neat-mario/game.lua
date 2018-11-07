@@ -19,6 +19,14 @@ function _M.getCoins()
 	return coins
 end
 
+function _M.getTimer()
+	local hundreds = memory.readbyte(0x0F31)
+	local tens = memory.readbyte(0x0F32)
+	local ones = memory.readbyte(0x0F33)
+	local time = hundreds * 100 + tens * 10 + ones
+	return time
+end
+
 function _M.getScore()
 	local scoreLeft = memory.read_s16_le(0x0F34)
 	local scoreRight = memory.read_s16_le(0x0F36)
