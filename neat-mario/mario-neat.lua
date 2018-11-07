@@ -973,6 +973,18 @@ function flipState()
 		forms.settext(startButton, "Stop")
 	end
 end
+
+function toggleGenome()
+	if config.canDisplayGenome == true then
+		config.canDisplayGenome = false
+		forms.settext(toggleGenomeButton, "Show Genome")
+		forms.clear(netPicture,0x80808080)
+		forms.refresh(netPicture)
+	else
+		config.canDisplayGenome = true
+		forms.settext(toggleGenomeButton, "Hide Genome")
+	end
+end
  
 function loadPool()
 	filename = forms.openfile("DP1.state.pool",config.PoolDir) 
@@ -1026,6 +1038,7 @@ DmgLabel = forms.label(form, "Damage: " .. "", 230, 65, 110, 14)
 PowerUpLabel = forms.label(form, "PowerUp: " .. "", 230, 80, 110, 14)
 
 startButton = forms.button(form, "Start", flipState, 155, 102)
+toggleGenomeButton = forms.button(form, "Show Genome", toggleGenome, 305, 102)
 
 restartButton = forms.button(form, "Restart", initializePool, 155, 102)
 saveButton = forms.button(form, "Save", savePool, 5, 102)
@@ -1043,7 +1056,9 @@ while true do
 	local species = pool.species[pool.currentSpecies]
 	local genome = species.genomes[pool.currentGenome]
 	
-	displayGenome(genome)
+	if config.canDisplayGenome == true then
+		displayGenome(genome)
+	end
 	
 	if pool.currentFrame%5 == 0 then
 		evaluateCurrent()

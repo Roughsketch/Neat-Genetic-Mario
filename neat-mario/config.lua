@@ -65,5 +65,6 @@ _M.BoxRadius = 6
 _M.InputSize = (_M.BoxRadius*2+1)*(_M.BoxRadius*2+1)
 
 _M.Running = false
+_M.canDisplayGenome = false
 
 return _M
