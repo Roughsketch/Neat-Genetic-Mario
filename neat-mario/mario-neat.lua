@@ -653,6 +653,7 @@ function initializeRun()
 	startLives = game.getLives()
 	checkMarioCollision = true
 	marioHitCounter = 0
+	marioJumpCounter = 0
 	powerUpCounter = 0
 	powerUpBefore = game.getPowerup()
 	local species = pool.species[pool.currentSpecies]
@@ -905,63 +906,74 @@ function mysplit(inputstr, sep)
 end
 
 function loadFile(filename)
-		print("Loading pool from " .. filename)
-        local file = io.open(filename, "r")
-        pool = newPool()
-        pool.generation = file:read("*number")
-        pool.maxFitness = file:read("*number")
-        forms.settext(MaxLabel, "Max Fitness: " .. math.floor(pool.maxFitness))
-        local numSpecies = file:read("*number")
-        for s=1,numSpecies do
-                local species = newSpecies()
-                table.insert(pool.species, species)
-                species.topFitness = file:read("*number")
-                species.staleness = file:read("*number")
-                local numGenomes = file:read("*number")
-                for g=1,numGenomes do
-                        local genome = newGenome()
-                        table.insert(species.genomes, genome)
-                        genome.fitness = file:read("*number")
-                        genome.maxneuron = file:read("*number")
-                        local line = file:read("*line")
-                        while line ~= "done" do
+	print("Loading pool from " .. filename)
 
-                                genome.mutationRates[line] = file:read("*number")
-                                line = file:read("*line")
-                        end
-                        local numGenes = file:read("*number")
-                        for n=1,numGenes do
+	local file = io.open(filename, "r")
+	pool = newPool()
+	pool.generation = file:read("*number")
+	pool.maxFitness = file:read("*number")
 
-                                local gene = newGene()
-                                local enabled
-								
-								local geneStr = file:read("*line")
-								local geneArr = mysplit(geneStr)
-								gene.into = tonumber(geneArr[1])
-								gene.out = tonumber(geneArr[2])
-								gene.weight = tonumber(geneArr[3])
-								gene.innovation = tonumber(geneArr[4])
-								enabled = tonumber(geneArr[5])
+	forms.settext(MaxLabel, "Max Fitness: " .. math.floor(pool.maxFitness))
 
+	local numSpecies = file:read("*number")
 
-                                if enabled == 0 then
-                                        gene.enabled = false
-                                else
-                                        gene.enabled = true
-                                end
-                                
-								table.insert(genome.genes, gene)
-                        end
-                end
-        end
-        file:close()
-        
-        while fitnessAlreadyMeasured() do
-                nextGenome()
-        end
-        initializeRun()
-        pool.currentFrame = pool.currentFrame + 1
-		print("Pool loaded.")
+	for s=1,numSpecies do
+		local species = newSpecies()
+		table.insert(pool.species, species)
+		species.topFitness = file:read("*number")
+		species.staleness = file:read("*number")
+
+		local numGenomes = file:read("*number")
+
+		for g=1,numGenomes do
+			local genome = newGenome()
+
+			table.insert(species.genomes, genome)
+			genome.fitness = file:read("*number")
+			genome.maxneuron = file:read("*number")
+
+			local line = file:read("*line")
+
+			while line ~= "done" do
+				genome.mutationRates[line] = file:read("*number")
+				line = file:read("*line")
+			end
+
+			local numGenes = file:read("*number")
+
+			for n=1,numGenes do
+				local gene = newGene()
+				local enabled
+				local geneStr = file:read("*line")
+				local geneArr = mysplit(geneStr)
+
+				gene.into = tonumber(geneArr[1])
+				gene.out = tonumber(geneArr[2])
+				gene.weight = tonumber(geneArr[3])
+				gene.innovation = tonumber(geneArr[4])
+
+				enabled = tonumber(geneArr[5])
+
+				if enabled == 0 then
+					gene.enabled = false
+				else
+					gene.enabled = true
+				end
+				
+				table.insert(genome.genes, gene)
+			end
+		end
+	end
+
+	file:close()
+	
+	while fitnessAlreadyMeasured() do
+		nextGenome()
+	end
+
+	initializeRun()
+	pool.currentFrame = pool.currentFrame + 1
+	print("Pool loaded.")
 end
 
 function flipState()
@@ -1015,8 +1027,11 @@ function playTop()
 	return
 end
 
+output_log = io.open("output.log", "w")
+
 function onExit()
 	forms.destroy(form)
+	output_log:close()
 end
 
 writeFile(config.PoolDir.."temp.pool")
@@ -1052,109 +1067,126 @@ spritelist.InitExtSpriteList()
 
 while true do
 	if config.Running == true then
-
-	local species = pool.species[pool.currentSpecies]
-	local genome = species.genomes[pool.currentGenome]
-	
-	if config.canDisplayGenome == true then
-		displayGenome(genome)
-	end
-	
-	if pool.currentFrame%5 == 0 then
-		evaluateCurrent()
-	end
-
-	joypad.set(controller)
-
-	game.getPositions()
-	if marioX > rightmost then
-		rightmost = marioX
-		timeout = config.NeatConfig.TimeoutConstant
-	end
-	
-	local hitTimer = game.getMarioHitTimer()
-	
-	if checkMarioCollision == true then
-		if hitTimer > 0 then
-			marioHitCounter = marioHitCounter + 1
-			--console.writeline("Mario took damage, hit counter: " .. marioHitCounter)
-			checkMarioCollision = false
-		end
-	end
-	
-	if hitTimer == 0 then
-		checkMarioCollision = true
-	end
-	
-	powerUp = game.getPowerup()
-	if powerUp > 0 then
-		if powerUp ~= powerUpBefore then
-			powerUpCounter = powerUpCounter+1
-			powerUpBefore = powerUp
-		end
-	end
-	
-	Lives = game.getLives()
-
-	timeout = timeout - 1
-	
-	local timeoutBonus = pool.currentFrame / 4
-
-	if game.getPlayerAnim() == 9 or timeout + timeoutBonus <= 0 then
-		local hitPenalty = marioHitCounter * 100
-		local powerUpBonus = powerUpCounter * 50
-	
-		local fitness = hitPenalty + powerUpBonus + rightmost * math.log(game.getTimer()) - pool.currentFrame / 2
-
-		if rightmost > 4816 then
-			fitness = fitness + 1000
-			console.writeline("!!!!!!Beat level!!!!!!!")
-		end
-		if fitness == 0 then
-			fitness = -1
-		end
-		genome.fitness = fitness
+		local species = pool.species[pool.currentSpecies]
+		local genome = species.genomes[pool.currentGenome]
 		
-		if fitness > pool.maxFitness then
-			pool.maxFitness = fitness
-			--writeFile("backup." .. pool.generation .. "." .. forms.gettext(saveLoadFile))
-			writeFile(forms.gettext(saveLoadFile) .. ".gen" .. pool.generation .. ".pool")
+		if config.canDisplayGenome == true then
+			displayGenome(genome)
 		end
 		
-		console.writeline("Gen " .. pool.generation .. " species " .. pool.currentSpecies .. " genome " .. pool.currentGenome .. " fitness: " .. fitness)
-		pool.currentSpecies = 1
-		pool.currentGenome = 1
-		while fitnessAlreadyMeasured() do
-			nextGenome()
+		if pool.currentFrame%5 == 0 then
+			evaluateCurrent()
 		end
-		initializeRun()
-	end
 
-	local measured = 0
-	local total = 0
-	for _,species in pairs(pool.species) do
-		for _,genome in pairs(species.genomes) do
-			total = total + 1
-			if genome.fitness ~= 0 then
-				measured = measured + 1
+		joypad.set(controller)
+
+		game.getPositions()
+		if marioX > rightmost then
+			rightmost = marioX
+			timeout = config.NeatConfig.TimeoutConstant
+		end
+		
+		local hitTimer = game.getMarioHitTimer()
+		
+		if checkMarioCollision == true then
+			if hitTimer > 0 then
+				marioHitCounter = marioHitCounter + 1
+				--console.writeline("Mario took damage, hit counter: " .. marioHitCounter)
+				checkMarioCollision = false
 			end
 		end
-	end
-	
-	gui.drawEllipse(game.screenX-84, game.screenY-84, 192, 192, 0x50000000) 
-	forms.settext(FitnessLabel, "Fitness: " .. math.floor(rightmost * math.log(game.getTimer()) - (pool.currentFrame) / 2 - (timeout + timeoutBonus)*2/3))
-	forms.settext(GenerationLabel, "Generation: " .. pool.generation)
-	forms.settext(SpeciesLabel, "Species: " .. pool.currentSpecies)
-	forms.settext(GenomeLabel, "Genome: " .. pool.currentGenome)
-	forms.settext(MaxLabel, "Max: " .. math.floor(pool.maxFitness))
-	forms.settext(MeasuredLabel, "Measured: " .. math.floor(measured/total*100) .. "%")
-	forms.settext(CoinsLabel, "Coins: " .. (game.getCoins() - startCoins))
-	forms.settext(ScoreLabel, "Score: " .. (game.getScore() - startScore))
-	forms.settext(LivesLabel, "Lives: " .. Lives)
-	forms.settext(DmgLabel, "Damage: " .. marioHitCounter)
-	forms.settext(PowerUpLabel, "PowerUp: " .. powerUpCounter)
+		
+		if hitTimer == 0 then
+			checkMarioCollision = true
+		end
+		
+		if game.isJumping() then
+			marioJumpCounter = marioJumpCounter + 1
+		end
 
-	pool.currentFrame = pool.currentFrame + 1
+		powerUp = game.getPowerup()
+		if powerUp > 0 then
+			if powerUp ~= powerUpBefore then
+				powerUpCounter = powerUpCounter+1
+				powerUpBefore = powerUp
+			end
+		end
+		
+		Lives = game.getLives()
+
+		timeout = timeout - 1
+		
+		local timeoutBonus = pool.currentFrame / 4
+
+		if game.getPlayerAnim() == 9 or game.isEnding() or timeout + timeoutBonus <= 0 then
+			local framePenalty = pool.currentFrame / 2
+			local hitPenalty = marioHitCounter * config.NeatConfig.HitPenaltyMult
+			local jumpPenalty = marioJumpCounter * 10
+			local powerUpBonus = powerUpCounter * config.NeatConfig.PowerupBonusMult
+			local midwayBonus = game.getMidway() * config.NeatConfig.MidwayBonus
+			local distTimeBonus = rightmost * math.log(game.getTimer())
+		
+			local fitness = powerUpBonus + distTimeBonus + midwayBonus - hitPenalty - framePenalty - jumpPenalty
+
+			if game.isEnding() then
+				fitness = fitness + config.NeatConfig.FinishBonus
+				console.writeline("!!!!!!Beat level!!!!!!!")
+			end
+			if fitness == 0 then
+				fitness = -1
+			end
+			genome.fitness = fitness
+			
+			if fitness > pool.maxFitness then
+				pool.maxFitness = fitness
+				--writeFile("backup." .. pool.generation .. "." .. forms.gettext(saveLoadFile))
+				writeFile(forms.gettext(saveLoadFile) .. ".gen" .. pool.generation .. ".pool")
+			end
+
+			output_log:write(pool.generation .. "," .. 
+							pool.currentSpecies .. "," .. 
+							pool.currentGenome .. "," .. 
+							fitness .. "," ..
+							framePenalty .. "," ..
+							hitPenalty .. "," ..
+							jumpPenalty .. "," ..
+							powerUpBonus .. "," ..
+							midwayBonus .. "," ..
+							distTimeBonus .. "\n")
+			console.writeline("Gen " .. pool.generation .. " species " .. pool.currentSpecies .. " genome " .. pool.currentGenome .. " fitness: " .. fitness)
+			pool.currentSpecies = 1
+			pool.currentGenome = 1
+			while fitnessAlreadyMeasured() do
+				nextGenome()
+			end
+			initializeRun()
+		end
+
+		local measured = 0
+		local total = 0
+		for _,species in pairs(pool.species) do
+			for _,genome in pairs(species.genomes) do
+				total = total + 1
+				if genome.fitness ~= 0 then
+					measured = measured + 1
+				end
+			end
+		end
+		
+		gui.drawEllipse(game.screenX-84, game.screenY-84, 192, 192, 0x50000000) 
+		forms.settext(FitnessLabel, "Fitness: " .. math.floor(rightmost * math.log(game.getTimer()) - (pool.currentFrame) / 2 - (timeout + timeoutBonus)*2/3))
+		forms.settext(GenerationLabel, "Generation: " .. pool.generation)
+		forms.settext(SpeciesLabel, "Species: " .. pool.currentSpecies)
+		forms.settext(GenomeLabel, "Genome: " .. pool.currentGenome)
+		forms.settext(MaxLabel, "Max: " .. math.floor(pool.maxFitness))
+		forms.settext(MeasuredLabel, "Measured: " .. math.floor(measured/total*100) .. "%")
+		forms.settext(CoinsLabel, "Coins: " .. (game.getCoins() - startCoins))
+		forms.settext(ScoreLabel, "Score: " .. (game.getScore() - startScore))
+		forms.settext(LivesLabel, "Lives: " .. Lives)
+		forms.settext(DmgLabel, "Damage: " .. marioHitCounter)
+		forms.settext(PowerUpLabel, "PowerUp: " .. powerUpCounter)
+
+		pool.currentFrame = pool.currentFrame + 1
 	
 	end
 	emu.frameadvance();
