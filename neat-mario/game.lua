@@ -32,6 +32,21 @@ function _M.getPlayerAnim()
 	return anim
 end
 
+function _M.getMidway()
+	local midway = memory.readbyte(0x13CE)
+	return midway
+end
+
+function _M.isEnding()
+	local value = memory.readbyte(0x13D9)
+	return value ~= 0
+end
+
+function _M.isJumping()
+	local value = memory.readbyte(0x72)
+	return value == 0x0B
+end
+
 function _M.getScore()
 	local scoreLeft = memory.read_s16_le(0x0F34)
 	local scoreRight = memory.read_s16_le(0x0F36)
