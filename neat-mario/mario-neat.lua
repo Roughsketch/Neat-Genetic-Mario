@@ -1015,8 +1015,11 @@ function playTop()
 	return
 end
 
+output_log = io.open("control_output.log", "w")
+
 function onExit()
 	forms.destroy(form)
+	output_log:close()
 end
 
 writeFile(config.PoolDir.."temp.pool")
@@ -1112,11 +1115,11 @@ while true do
 		
 		local hitPenalty = marioHitCounter * 100
 		local powerUpBonus = powerUpCounter * 100
+		local ExtraLiveBonus = (Lives - startLives)*1000
 	
 		local fitness = coinScoreFitness - hitPenalty + powerUpBonus + rightmost - pool.currentFrame / 2
 
 		if startLives < Lives then
-			local ExtraLiveBonus = (Lives - startLives)*1000
 			fitness = fitness + ExtraLiveBonus
 			console.writeline("ExtraLiveBonus added " .. ExtraLiveBonus)
 		end
@@ -1135,7 +1138,15 @@ while true do
 			--writeFile("backup." .. pool.generation .. "." .. forms.gettext(saveLoadFile))
 			writeFile(forms.gettext(saveLoadFile) .. ".gen" .. pool.generation .. ".pool")
 		end
-		
+		output_log:write(pool.generation .. "," .. 
+						pool.currentSpecies .. "," .. 
+						pool.currentGenome .. "," .. 
+						fitness .. "," ..
+						rightmost .. "," .. 
+						coinScoreFitness .. "," ..
+						hitPenalty .. "," ..
+						powerUpBonus .. "," ..
+						ExtraLiveBonus .. "\n")
 		console.writeline("Gen " .. pool.generation .. " species " .. pool.currentSpecies .. " genome " .. pool.currentGenome .. " fitness: " .. fitness)
 		pool.currentSpecies = 1
 		pool.currentGenome = 1
