@@ -1105,6 +1105,7 @@ while true do
 
 	if game.getPlayerAnim() == 9 or timeout + timeoutBonus <= 0 then
 		local score = game.getScore() - startScore
+		local coins = game.getCoins() - startCoins
 		
 		--console.writeline("Coins: " .. coins .. " score: " .. score)
 
