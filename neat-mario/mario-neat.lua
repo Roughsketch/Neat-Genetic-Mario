@@ -1121,7 +1121,7 @@ while true do
 		if game.getPlayerAnim() == 9 or game.isEnding() or timeout + timeoutBonus <= 0 then
 			local framePenalty = pool.currentFrame / 2
 			local hitPenalty = marioHitCounter * config.NeatConfig.HitPenaltyMult
-			local jumpPenalty = marioJumpCounter * 10
+			local jumpPenalty = marioJumpCounter * config.NeatConfig.JumpPenaltyMult
 			local powerUpBonus = powerUpCounter * config.NeatConfig.PowerupBonusMult
 			local midwayBonus = game.getMidway() * config.NeatConfig.MidwayBonus
 			local distTimeBonus = rightmost * math.log(game.getTimer())

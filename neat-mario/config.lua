@@ -51,7 +51,8 @@ _M.NeatConfig = {
 	PowerupBonusMult = 100,
 	HitPenaltyMult = 1000,
 	FinishBonus = 5000,
-	MidwayBonus = 2500
+	MidwayBonus = 2500,
+	JumpPenaltyMult = 10
 }
 
 _M.ButtonNames = {
