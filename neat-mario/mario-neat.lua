@@ -1147,6 +1147,7 @@ while true do
 							pool.currentSpecies .. "," .. 
 							pool.currentGenome .. "," .. 
 							fitness .. "," ..
+							rightmost .. "," .. 
 							framePenalty .. "," ..
 							hitPenalty .. "," ..
 							jumpPenalty .. "," ..

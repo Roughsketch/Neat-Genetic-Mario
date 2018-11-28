@@ -30,36 +30,40 @@ _M.State = {
 _M.StartPowerup = 0
 
 _M.NeatConfig = {
---Filename = "DP1.state",
-Filename = _M.PoolDir .. _M.State[1],
-Population = 300,
-DeltaDisjoint = 2.0,
-DeltaWeights = 0.4,
-DeltaThreshold = 1.0,
-StaleSpecies = 15,
-MutateConnectionsChance = 0.25,
-PerturbChance = 0.90,
-CrossoverChance = 0.75,
-LinkMutationChance = 2.0,
-NodeMutationChance = 0.50,
-BiasMutationChance = 0.40,
-StepSize = 0.1,
-DisableMutationChance = 0.4,
-EnableMutationChance = 0.2,
-TimeoutConstant = 20,
-MaxNodes = 1000000,
+	--Filename = "DP1.state",
+	Filename = _M.PoolDir .. _M.State[1],
+	Population = 300,
+	DeltaDisjoint = 2.0,
+	DeltaWeights = 0.4,
+	DeltaThreshold = 1.0,
+	StaleSpecies = 15,
+	MutateConnectionsChance = 0.25,
+	PerturbChance = 0.90,
+	CrossoverChance = 0.75,
+	LinkMutationChance = 2.0,
+	NodeMutationChance = 0.50,
+	BiasMutationChance = 0.40,
+	StepSize = 0.1,
+	DisableMutationChance = 0.4,
+	EnableMutationChance = 0.2,
+	TimeoutConstant = 20,
+	MaxNodes = 1000000,
+	PowerupBonusMult = 100,
+	HitPenaltyMult = 1000,
+	FinishBonus = 5000,
+	MidwayBonus = 2500
 }
 
 _M.ButtonNames = {
-		"A",
-		"B",
-		"X",
-		"Y",
-		"Up",
-		"Down",
-		"Left",
-		"Right",
-	}
+	"A",
+	"B",
+	"X",
+	"Y",
+	"Up",
+	"Down",
+	"Left",
+	"Right",
+}
 	
 _M.BoxRadius = 6
 _M.InputSize = (_M.BoxRadius*2+1)*(_M.BoxRadius*2+1)
