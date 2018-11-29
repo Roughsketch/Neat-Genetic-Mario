@@ -115,6 +115,12 @@ function _M.getSprites()
 					-- Increase the weight
 					good = -2
 				end 
+			else if good > 0 then
+				-- If good sprite gives powerup, increase weight
+				pflag = memory.readbyte(0x167A + slot) & 0x40
+				if pflag == 1 then
+					good = 2
+				end
 			end
 
 			sprites[#sprites+1] = {["x"]=spritex, ["y"]=spritey, ["good"] = good}
