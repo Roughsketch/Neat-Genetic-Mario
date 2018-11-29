@@ -105,7 +105,19 @@ function _M.getSprites()
 		if status ~= 0 then
 			spritex = memory.readbyte(0xE4+slot) + memory.readbyte(0x14E0+slot)*256
 			spritey = memory.readbyte(0xD8+slot) + memory.readbyte(0x14D4+slot)*256
-			sprites[#sprites+1] = {["x"]=spritex, ["y"]=spritey, ["good"] = spritelist.Sprites[memory.readbyte(0x009e + slot) + 1]}
+			good = spritelist.Sprites[memory.readbyte(0x009e + slot) + 1]
+
+			-- If this is a bad sprite
+			if good < 0 then
+				-- And if the sprite cannot be jumped on
+				jflag = memory.readbyte(0x1656 + slot) & 0x10
+				if jflag == 0 then
+					-- Increase the weight
+					good = -2
+				end 
+			end
+
+			sprites[#sprites+1] = {["x"]=spritex, ["y"]=spritey, ["good"] = good}
 		end
 	end		
 		
